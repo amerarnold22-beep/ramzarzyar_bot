@@ -1,10 +1,12 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from flask import Flask
+import threading
 
 TOKEN = "8325004172:AAGEiM3hhUhW4BCk21gvWTeSnvVZF5TUUXw"
-
 user_data = {}
 
+# هندلرهای ربات
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_data[user_id] = {"free": 3, "subscribed": False}
@@ -25,8 +27,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("🚫 تحلیل رایگان تموم شد.\n➤ پرداخت ۱۰۰۰ تومان برای هر تحلیل\n➤ یا پرداخت ۱۰ هزار تومان برای اشتراک ماهانه")
 
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+# اجرای ربات در یک Thread جدا
+def run_bot():
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.run_polling()
 
-app.run_polling()
+# اجرای Flask برای باز نگه داشتن پورت
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def home():
+    return "Bot is running!"
+
+if __name__ == '__main__':
+    threading.Thread(target=run_bot).start()
+    flask_app.run(host='0.0.0.0', port=10000)
