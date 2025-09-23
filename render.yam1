@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ramzbin-bot
+    name: ramzarzyar-bot
     env: python
     plan: free
     buildCommand: chmod +x start.sh && pip install -r requirements.txt
