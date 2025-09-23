@@ -3,7 +3,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 from flask import Flask
 import threading
 
-TOKEN = "8325004172:AAGEiM3hhUhW4BCk21gvWTeSnvVZF5TUUXw"
+import os
+TOKEN = os.getenv("BOT_TOKEN")
 user_data = {}
 
 # هندلرهای ربات
