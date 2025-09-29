@@ -3,7 +3,26 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 from flask import Flask
 import threading
 import os
+import requests
 
+def get_crypto_price(symbol):
+    symbol_map = {
+        "BTC": "bitcoin",
+        "ETH": "ethereum",
+        "DOGE": "dogecoin",
+        "BNB": "binancecoin"
+    }
+
+    if symbol not in symbol_map:
+        return None
+
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={symbol_map[symbol]}&vs_currencies=usd"
+    try:
+        response = requests.get(url).json()
+        price = response[symbol_map[symbol]]["usd"]
+        return price
+    except:
+        return None
 # گرفتن توکن از محیط
 TOKEN = os.getenv("BOT_TOKEN")
 
@@ -20,7 +39,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     text = update.message.text.upper()
+price = get_crypto_price(text)
+if price:
+    message = f"✅ قیمت لحظه‌ای {text}: ${price}\nباقی‌مونده رایگان: {user_data[user_id]['free']}"
+else:
+    message = f"❌ نماد {text} شناخته نشد. لطفاً BTC یا ETH یا DOGE یا BNB وارد کن."
 
+await update.message.reply_text(message)
     if user_id not in user_data:
         user_data[user_id] = {"free": 3, "subscribed": False}
 
